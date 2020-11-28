@@ -11,13 +11,17 @@
 <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
     <h5 class="my-0 mr-md-auto font-weight-normal">PlacesRememberApp</h5>
     <nav class="my-2 my-md-0 mr-md-3">
-        <a class="p-2 text-dark" href="#">Текст 1</a>
-        <a class="p-2 text-dark" href="#">Текст 2</a>
-        <a class="p-2 text-dark" href="#">Текст 3</a>
-        <a class="p-2 text-dark" href="#">Текст 4</a>
+        <a class="p-2 text-dark" href="{% url 'homepage' %}">Главная страница</a>
+        {% if user.is_authenticated %}
+        <a class="p-2 text-dark" href="#">Мой профиль</a>
+        {% endif %}
     </nav>
-    <a class="btn btn-outline-primary" href="#">Войти</a>&nbsp
-    <a class="btn btn-outline-primary" href="#">Регистрация</a>
+    {% if user.is_authenticated %}
+    <a class="btn btn-outline-primary" href="{% url 'account_logout' %}">Выйти</a>&nbsp
+    {% else %}
+    <a class="btn btn-outline-primary" href="{% url 'account_login' %}">Войти</a>&nbsp
+    <a class="btn btn-outline-primary" href="{% url 'account_signup' %}">Регистрация</a>
+    {% endif %}
 </div>
 
 {% block content %}

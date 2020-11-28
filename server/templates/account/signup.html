@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="col-sm-5">
+        <h1>Регистрация</h1>
+        <a href="{% provider_login_url "facebook" method="oauth2" %}">
+        <img src="{% static 'img/facebook-btn.png' %}" width="250" alt=""></a>
+        <br>
+        <br>
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="btn btn-success" type="submit">Зарегестрироваться</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
