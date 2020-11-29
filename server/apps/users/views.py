@@ -5,8 +5,12 @@ from django.shortcuts import render
 
 @login_required
 def profile(request):
-    user = SocialAccount.objects.get(user=request.user)
-    context = {
-        'access_token': SocialToken.objects.get(account=user, account__provider='facebook')
-    }
-    return render(request, 'users/profile.html', context=context)
+    query = SocialAccount.objects.filter(user=request.user)
+    if query.exists():
+        user = query.first()
+        context = {
+            'access_token': '&access_token=' + SocialToken.objects.get(account=user, account__provider='facebook')
+        }
+        return render(request, 'users/profile.html', context=context)
+
+    return render(request, 'users/profile.html')

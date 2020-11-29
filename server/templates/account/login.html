@@ -10,14 +10,12 @@
 <div class="container">
     <div class="col-sm-5">
         <h1>Войти</h1>
-
         <p>Пожалуйста, войдите с одним из ваших внешних аккаунтов. Или <a href="{{ signup_url }}">зарегестрируйтесь</a>
         </p>
         <a href="{% provider_login_url "facebook" method="oauth2" %}">
 
         <img src="{% static 'img/facebook-btn.png' %}" width="250" alt=""></a>
         <br>
-
         <form class="login" method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
             {{ form|crispy }}
@@ -28,7 +26,6 @@
             <button class="btn btn-success" type="submit">Войти</button>
             <button type="button" class="btn btn-light" href="{% url 'account_reset_password' %}">Забыли пароль?
             </button>
-
         </form>
     </div>
 </div>

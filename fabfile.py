@@ -9,6 +9,10 @@ def migrate(app=''):
     local("docker exec -i $(docker ps | grep server_ | awk '{{ print $1 }}') python manage.py migrate {}".format(app))
 
 
+def test():
+    local("docker exec -i $(docker ps | grep server_ | awk '{{ print $1 }}') python manage.py test")
+
+
 def createsuperuser():
     local("docker exec -it $(docker ps | grep server_ | awk '{{ print $1 }}') python manage.py createsuperuser")
 

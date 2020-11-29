@@ -47,6 +47,7 @@ README
 * `fab makemigrations` - создать файл миграций
 * `fab migrate` - применить миграции
 * `fab createsuperuser` - создать супер пользователя
+* `fab test` - запустить тесты
 * `fab shell` - зайти в shell django приложения
 * `fab bash` - зайти в bash контейнера server
 * `fab kill` - остановить все запущенные контейнеры

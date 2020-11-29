@@ -2,10 +2,202 @@
 
 {% block title %}Главная страница{% endblock %}
 
+{% block head %}
+<script src="https://api-maps.yandex.ru/2.1/?apikey=2cd83a35-c897-420f-a9c7-57d29dfadc83&lang=ru_RU"
+        type="text/javascript"></script>
+{% endblock %}
+
 {% block content %}
+{% if user.is_authenticated %}
+<div class="container" id="container">&nbsp
+    <div class="row">
+        <div class="col-sm-6" style="display: none" id="memoryInfo"></div>
+        <div class="col-sm-6" id="left-side">
+            <h1>Добавить воспоминание</h1>
+            <form id="memoryForm">
+                <div class="form-group">
+                    <label for="Title1">Заголовок</label>
+                    <input type="text" class="form-control" id="Title1" aria-describedby="emailHelp">
+                </div>
+                <div class="form-group">
+                    <label for="Textarea1">Описание</label>
+                    <textarea class="form-control" id="Textarea1" rows="3"></textarea>
+                    <small id="emailHelp" class="form-text text-muted">Расскажите подробней про то событие.</small>
+                    <div id="map" style="width: 400px; height: 400px"></div>
+                </div>
+                <button type="button" onclick="postMemory()" class="btn btn-primary">Сохранить</button>
+            </form>
+        </div>
+        &nbsp&nbsp&nbsp
+        <div class="col-sm-5">
+            <h1>Мои воспоминания</h1>
+            <ul class="list-group" id="memory-list"></ul>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    const userId = {{user.id | safe}}
+
+    function httpDelete(id) {
+        const headers = new Headers({
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        });
+        return this.fetch(`{{ object.get_absolute_url }}/api/memory/${id}/`, {
+            method: 'DELETE',
+            headers,
+            credentials: 'include',
+        }).then(() => resetMemories())
+    }
+
+    function httpGet() {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", `{{ object.get_absolute_url }}{% url 'memory-list' %}?user=${userId}`, false);
+        xmlHttp.send(null);
+        return JSON.parse(xmlHttp.responseText);
+    }
+
+
+    let memories = []
+
+    function resetMemories() {
+        var ul = document.getElementById("memory-list");
+        ul.innerHTML = "";
+
+        memories = httpGet()
+        if (memories.results.length === 0) {
+            ul.innerHTML = "<p><i>У вас нет созданных воспоминаний.</i></p>"
+        }
+
+        var ul = document.getElementById("memory-list");
+        memories.results.forEach((i) => {
+            var li = document.createElement("li");
+            li.className = "list-group-item list-group-item-action"
+            li.setAttribute('type', 'button')
+            li.setAttribute('onclick', `showExtraInfo(${i.id})`)
+            li.appendChild(document.createTextNode(i.title));
+            ul.appendChild(li);
+        })
+    }
+
+    resetMemories()
+
+    console.log(memories)
+
+    function resetForm() {
+        var div = document.getElementById("left-side").style.display = "block";
+        var memoryDiv = document.getElementById("memoryInfo").style.display = "none";
+    }
+
+    const username = "{{ user.username|safe }}";
+    const csrftoken = '{{ csrf_token }}';
+
+    function deleteMemory(id) {
+        httpDelete(id)
+        resetForm()
+    }
+
+    function createMemory() {
+        resetForm()
+        document.querySelector('#Title1').value = ""
+        document.querySelector('#Textarea1').value = ""
+    }
+
+    function showExtraInfo(id) {
+        var div = document.getElementById("left-side").style.display = "none";
+        var memoryDiv = document.getElementById("memoryInfo")
+        memoryDiv.style.display = "block";
+        let obj = memories.results.find(o => o.id === id);
+
+        console.log(obj)
+
+        memoryDiv.innerHTML = `<h2>${obj.title}</h2><br><p>${obj.text}</p><div id="mapInfo" style="width: 400px; height: 400px"></div><br><button type="button" onclick="deleteMemory(${id})" class="btn btn-danger">Удалить</button>&nbsp<button type="button" onclick="createMemory()" class="btn btn-success">Создать</button>`
+        ymaps.ready(init);
+
+        function init() {
+            var myMap = new ymaps.Map("mapInfo", {
+                center: [obj.longitude, obj.latitude],
+                zoom: 8
+            });
+            myPlacemark = new ymaps.Placemark([obj.longitude, obj.latitude], {
+                hintContent: obj.title
+            });
+            myMap.geoObjects.add(myPlacemark);
+        }
+    }
+
+    function postMemory() {
+        let title = document.querySelector('#Title1').value
+        let text = document.querySelector('#Textarea1').value
+
+        if (title === "") {
+            alert('Поле заголовка пустое.')
+            return 0
+        }
+        if (text === "") {
+            alert('Поле текста пустое.')
+            return 0
+        }
+
+        if (!(latitude | longitude)) {
+            alert('Вы не указали отметку на карте.')
+            return 0
+        }
+        const headers = new Headers({
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        });
+        return this.fetch("{{ object.get_absolute_url }}{% url 'memory-list' %}", {
+            method: 'POST',
+            headers,
+            credentials: 'include',
+            body: JSON.stringify({
+                title: title,
+                text: text,
+                longitude: longitude,
+                latitude: latitude,
+            })
+        }).then(
+            response => response.json()
+        ).then((response) => {
+                resetMemories()
+                showExtraInfo(response.id)
+            }
+        )
+    }
+
+    ymaps.ready(init);
+    let longitude = NaN
+    let latitude = NaN
+
+    function init() {
+        var myMap = new ymaps.Map("map", {
+            center: [55.76, 37.64],
+            zoom: 4
+        });
+        myPlacemark = new ymaps.Placemark([55.907228, 31.260503], {
+            // Чтобы балун и хинт открывались на метке, необходимо задать ей определенные свойства.
+            balloonContentHeader: "Балун метки",
+            balloonContentBody: "Содержимое <em>балуна</em> метки",
+            balloonContentFooter: "Подвал",
+            hintContent: "Хинт метки"
+        });
+        myMap.events.add('click', function (e) {
+            [longitude, latitude] = e.get('coords');
+            myPlacemark = new ymaps.Placemark([longitude, latitude], {
+                hintContent: "Метка"
+            });
+            myMap.geoObjects.removeAll()
+            myMap.geoObjects.add(myPlacemark);
+        });
+    }
+</script>
+{% else %}
 <div class="container">
     <h1 class="mt-5">Что такое PlacesRememberApp?</h1>
     <p class="lead">Это веб-приложение, позволяющее людям хранить воспоминания о посещаемых местах.</p>
     <p>Перейди по <a href="{% url 'account_login' %}">ссылке</a> чтобы начать пользоваться сервисом.</p>
 </div>
+{% endif %}
 {% endblock %}
