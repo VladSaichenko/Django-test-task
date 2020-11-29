@@ -2,7 +2,6 @@ import os
 
 import dj_database_url
 
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SECRET_KEY = '!6xmo&@!7dzw8p6yxjnj&&1lur%4+fs!r2tuzb#6j(64s@m6)*'
 ROOT_URLCONF = 'config.urls'
@@ -76,6 +75,28 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+SOCIALACCOUNT_PROVIDERS = \
+    {'facebook':
+         {'METHOD': 'oauth2',
+          'SCOPE': ['email', 'public_profile', 'user_friends'],
+          'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+          'FIELDS': [
+              'id',
+              'email',
+              'name',
+              'first_name',
+              'last_name',
+              'verified',
+              'locale',
+              'timezone',
+              'link',
+              'gender',
+              'updated_time'],
+          'EXCHANGE_TOKEN': True,
+          'LOCALE_FUNC': lambda request: 'kr_KR',
+          'VERIFIED_EMAIL': False,
+          'VERSION': 'v9.0'}}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -106,7 +127,6 @@ if not DEBUG:
         },
     ]
 
-
 ##################################################################
 # Static files settings (CSS, JavaScript, Images)
 ##################################################################
@@ -133,9 +153,11 @@ FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o777
 if DEBUG:
     from .installed_apps import *
 
+
     def show_toolbar(request):
         from django.conf import settings
         return settings.DEBUG
+
 
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": show_toolbar,

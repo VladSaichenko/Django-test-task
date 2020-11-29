@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Профиль {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container">&nbsp
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="media">
+                <img src="{{user.socialaccount_set.all.0.get_avatar_url}}&access_token={{access_token}}" width="240"
+                     alt="Фотография профиля"
+                     class="rounded-circle account-img">
+            </div>
+            <h1><strong>{{ user.username }}</strong></h1>
+            <h4 class="text-secondary"><i>{{ user.first_name }} {{ user.last_name }}</i></h4>
+        </div>
+        <div class="col-sm-5">
+            <h1>Воспоминания</h1>
+        </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
